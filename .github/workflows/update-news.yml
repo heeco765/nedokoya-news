@@ -2,16 +2,20 @@ name: Update Google News JSON
 
 on:
   schedule:
-    - cron: "0 21 * * *"   # 毎日 6:00 JST
+    - cron: "0 21 * * *"   # 毎日6:00 JST
   workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # ★★★ これが必要！！！
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0   # ★ pull/force push 衝突回避のため
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -34,4 +38,3 @@ jobs:
           git add news.json
           git commit -m "Auto-update news.json" || echo "No changes"
           git push --force
-
