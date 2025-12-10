@@ -2,30 +2,30 @@ name: Update Google News JSON
 
 on:
   schedule:
-    - cron: "0 21 * * *"   # 毎日6:00 JST
+    - cron: "0 21 * * *"   # JST 6:00
   workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # ★★★ これが必要！！！
+      contents: write
 
     steps:
-      - name: Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0   # ★ pull/force push 衝突回避のため
+          fetch-depth: 0      # ★ 正しく効く位置・インデント
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Fetch Google News RSS as JSON
         run: |
-          curl "https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=ja&gl=JP&ceid=JP:ja" \
-          -o news_raw.json
+          curl -L "https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=ja&gl=JP&ceid=JP:ja" \
+            -o news_raw.json
 
-      - name: Extract items and create simplified news.json
+      - name: Build simplified news.json
         run: |
           echo '{"items":' > news.json
           jq '.items' news_raw.json >> news.json
@@ -38,3 +38,4 @@ jobs:
           git add news.json
           git commit -m "Auto-update news.json" || echo "No changes"
           git push --force
+
